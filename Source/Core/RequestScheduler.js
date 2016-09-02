@@ -421,7 +421,7 @@ define([
      * @type {Boolean}
      * @default true
      */
-    RequestScheduler.prioritize = true;
+    RequestScheduler.prioritize = false;
 
     /**
      * Specifies if the request scheduler should throttle incoming requests, or let the browser queue requests under its control.

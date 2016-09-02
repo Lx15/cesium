@@ -369,6 +369,16 @@ define([
                 if (gltf instanceof Uint8Array) {
                     // Binary glTF
                     var result = parseBinaryGltfHeader(gltf);
+                    if (Model.noTextures && defined(result.glTF.materials) && defined(result.glTF.materials.Material_0)) {
+                        result.glTF.images = {};
+                        result.glTF.textures = {};
+                        var materialValues = result.glTF.materials.Material_0.values;
+                        var techniqueParameters = result.glTF.techniques.texturedUnlitTechnique.parameters;
+                        var techniqueUniforms = result.glTF.techniques.texturedUnlitTechnique.uniforms;
+                        delete materialValues.tex;
+                        delete techniqueParameters.tex;
+                        delete techniqueUniforms.u_tex;
+                    }
 
                     // KHR_binary_glTF is from the beginning of the binary section
                     if (result.binaryOffset !== 0) {
@@ -1891,6 +1901,10 @@ define([
                     attributeLocations[attrName] = attributesLength++;
                 }
             }
+        }
+
+        if (Model.noTextures) {
+            fs = fs.replace('gl_FragColor = texture2D(u_tex, v_texc);', 'gl_FragColor = vec4(vec3(-czm_windowToEyeCoordinates(gl_FragCoord).z/500.0), 1.0);');
         }
 
         if (usesExtension(model, 'WEB3D_quantized_attributes')) {

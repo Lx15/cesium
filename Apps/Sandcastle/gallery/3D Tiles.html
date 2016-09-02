@@ -31,15 +31,27 @@ function startup(Cesium) {
 
 var viewer = new Cesium.Viewer('cesiumContainer', {
     scene3DOnly : true,
-    shadows : true
+    shadows : false,
+    skyAtmosphere : false,
+    skybox : false
 });
 
 var scene = viewer.scene;
 scene.fog.enabled = false;
 scene.debugShowFramesPerSecond = true;
+scene.globe.imageryLayers.removeAll();
+Cesium.Model.noTextures = false;
+var startAtMuseum = true;
+
+var width = document.getElementById('cesiumContainer').offsetWidth;
+var height = document.getElementById('cesiumContainer').offsetHeight;
+console.log('width: ' + width);
+console.log('height: ' + height);
+console.log('pixel ratio: ' + window.devicePixelRatio);
+
 
 var tilesets = [{
-    name : 'Tileset', url : '../../../Specs/Data/Cesium3DTiles/Tilesets/Tileset/'
+    name : 'Tileset', url : 'http://c1200997-01.stk.com:8003/localTilesets/PhiladelphiaHiResRealityModelWithComcast/recon_h_3mx_aerial_cloudy_with_fixups.json'
 }, {
     name : 'Translucent', url : '../../../Specs/Data/Cesium3DTiles/Batched/BatchedTranslucent/'
 }, {
@@ -70,13 +82,18 @@ function loadTileset(url) {
     tileset = scene.primitives.add(new Cesium.Cesium3DTileset({
         url : url,
         debugShowStatistics : true,
-        maximumNumberOfLoadedTiles : 3
+        maximumNumberOfLoadedTiles : 3,
+        maximumScreenSpaceError : 2
     }));
 
     return tileset.readyPromise.then(function(tileset) {
-        var boundingSphere = tileset.boundingSphere;
-        viewer.camera.viewBoundingSphere(boundingSphere, new Cesium.HeadingPitchRange(0, -2.0, 0));
-        viewer.camera.lookAtTransform(Cesium.Matrix4.IDENTITY);
+        if (startAtMuseum) {
+            goToMuseum();
+        } else {
+            var boundingSphere = tileset.boundingSphere;
+            viewer.camera.viewBoundingSphere(boundingSphere, new Cesium.HeadingPitchRange(0, -2.0, 0));
+            viewer.camera.lookAtTransform(Cesium.Matrix4.IDENTITY);
+        }
 
         var properties = tileset.properties;
         if (Cesium.defined(properties) && Cesium.defined(properties.Height)) {
@@ -102,7 +119,7 @@ function loadTileset(url) {
                     "description" : "'Building id ${id} has height ${Height}.'"
                 }
             });
-            addStyleUI();
+            //addStyleUI();
         }
 
         tileset.loadProgress.addEventListener(function(numberOfPendingRequests, numberProcessing) {
@@ -130,7 +147,7 @@ canvas.onclick = function() {
 
 var handler = new Cesium.ScreenSpaceEventHandler(canvas);
 
-var pickingEnabled = true;
+var pickingEnabled = false;
 var flags = {
     // Mouse
     leftDown : false,
@@ -395,6 +412,16 @@ Sandcastle.addToolbarButton('Trim tiles (cache)', function() {
 Sandcastle.addToolbarButton('Picking on/off', function() {
     pickingEnabled = !pickingEnabled;
 });
+
+function goToMuseum() {
+    var longitude = -1.31215598;
+    var latitude = 0.6975313075;
+    var height = 20.0;
+    var center = Cesium.Cartesian3.fromRadians(longitude, latitude, height);
+    viewer.camera.lookAt(center, new Cesium.HeadingPitchRange(0.0, -3.0, 50.0));
+    viewer.camera.lookAtTransform(Cesium.Matrix4.IDENTITY);
+}
+Sandcastle.addToolbarButton('Go to museum', goToMuseum);
 
 // Styling ////////////////////////////////////////////////////////////////////
 

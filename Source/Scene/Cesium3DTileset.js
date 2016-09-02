@@ -18,6 +18,8 @@ define([
         '../Core/Request',
         '../Core/RequestScheduler',
         '../Core/RequestType',
+        '../Renderer/Buffer',
+        '../Renderer/Texture',
         '../ThirdParty/Uri',
         '../ThirdParty/when',
         './Cesium3DTile',
@@ -44,6 +46,8 @@ define([
         Request,
         RequestScheduler,
         RequestType,
+        Buffer,
+        Texture,
         Uri,
         when,
         Cesium3DTile,
@@ -1174,9 +1178,11 @@ define([
                 // "Total."  Total also will increase when a tile with a tileset.json content is loaded.
                 ', Total: ' + stats.numberTotal +
 
-                // --- Styling stats
-                ' | Tiles styled: ' + stats.numberOfTilesStyled +
-                ', Features styled: ' + stats.numberOfFeaturesStyled;
+                // // --- Styling stats
+                // ' | Tiles styled: ' + stats.numberOfTilesStyled +
+                // ', Features styled: ' + stats.numberOfFeaturesStyled +
+                ', Texture Memory (MB): ' + (Texture.memory / 1000000) +
+                ', Buffer Memory (MB): ' + (Buffer.memory / 1000000);
 
             /*global console*/
             console.log(s);
