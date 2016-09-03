@@ -178,7 +178,7 @@ define([
             // Loading stats
             numberOfPendingRequests : 0,
             numberProcessing : 0,
-            numberReady : 0, // Number of tiles with content loaded
+            numberContentReady : 0, // Number of tiles with content loaded
             numberTotal : 0, // Number of tiles in tileset.json (and other tileset.json files as they are loaded)
             // Styling stats
             numberOfTilesStyled : 0,
@@ -335,7 +335,7 @@ define([
         this.numberOfCommands = -1;
         this.numberOfPendingRequests = -1;
         this.numberProcessing = -1;
-        this.numberReady = -1;
+        this.numberContentReady = -1;
         this.numberTotal = -1;
         this.numberOfTilesStyled = -1;
         this.numberOfFeaturesStyled = -1;
@@ -1096,10 +1096,10 @@ define([
                 // Remove from processing queue
                 tileset._processingQueue.splice(index, 1);
                 --tileset._statistics.numberProcessing;
-                ++tileset._statistics.numberReady;
                 if (tile.hasContent) {
                     // RESEARCH_IDEA: ability to unload tiles (without content) for an
                     // external tileset when all the tiles are unloaded.
+                    ++tileset._statistics.numberContentReady;
                     tile.replacementNode = tileset._replacementList.add(tile);
                 }
             } else {
@@ -1145,7 +1145,7 @@ define([
              last.selected !== tileset._selectedTiles.length ||
              last.numberOfPendingRequests !== stats.numberOfPendingRequests ||
              last.numberProcessing !== stats.numberProcessing ||
-             last.numberReady !== stats.numberReady ||
+             last.numberContentReady !== stats.numberContentReady ||
              last.numberTotal !== stats.numberTotal ||
              last.numberOfTilesStyled !== stats.numberOfTilesStyled ||
              last.numberOfFeaturesStyled !== stats.numberOfFeaturesStyled);
@@ -1173,7 +1173,7 @@ define([
                 // --- Cache/loading stats
                 ' | Requests: ' + stats.numberOfPendingRequests +
                 ', Processing: ' + stats.numberProcessing +
-                ', Ready: ' + stats.numberReady +
+                ', Content Ready: ' + stats.numberContentReady +
                 // Total number of tiles includes tiles without content, so "Ready" may never reach
                 // "Total."  Total also will increase when a tile with a tileset.json content is loaded.
                 ', Total: ' + stats.numberTotal +
@@ -1193,7 +1193,7 @@ define([
         last.selected = tileset._selectedTiles.length;
         last.numberOfPendingRequests = stats.numberOfPendingRequests;
         last.numberProcessing = stats.numberProcessing;
-        last.numberReady = stats.numberReady;
+        last.numberContentReady = stats.numberContentReady;
         last.numberTotal = stats.numberTotal;
         last.numberOfTilesStyled = stats.numberOfTilesStyled;
         last.numberOfFeaturesStyled = stats.numberOfFeaturesStyled;
@@ -1246,7 +1246,7 @@ define([
             node = node.next;
             replacementList.remove(currentNode);
 
-            --stats.numberReady;
+            --stats.numberContentReady;
         }
     }
 
