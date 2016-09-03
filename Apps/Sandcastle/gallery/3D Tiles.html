@@ -41,7 +41,8 @@ scene.fog.enabled = false;
 scene.debugShowFramesPerSecond = true;
 scene.globe.imageryLayers.removeAll();
 Cesium.Model.noTextures = false;
-var startAtMuseum = true;
+var startAtMuseum = false;
+var startAtStreet = true;
 
 var width = document.getElementById('cesiumContainer').offsetWidth;
 var height = document.getElementById('cesiumContainer').offsetHeight;
@@ -89,6 +90,8 @@ function loadTileset(url) {
     return tileset.readyPromise.then(function(tileset) {
         if (startAtMuseum) {
             goToMuseum();
+        } else if (startAtStreet) {
+            goToStreet();
         } else {
             var boundingSphere = tileset.boundingSphere;
             viewer.camera.viewBoundingSphere(boundingSphere, new Cesium.HeadingPitchRange(0, -2.0, 0));
@@ -421,7 +424,22 @@ function goToMuseum() {
     viewer.camera.lookAt(center, new Cesium.HeadingPitchRange(0.0, -3.0, 50.0));
     viewer.camera.lookAtTransform(Cesium.Matrix4.IDENTITY);
 }
+
+function goToStreet() {
+//    console.log(viewer.camera.position);
+//    console.log(viewer.camera.direction);
+//    console.log(viewer.camera.up);
+//    console.log(viewer.camera.right);
+
+    viewer.camera.position = new Cesium.Cartesian3(1253088.094651307, -4732668.545243449, 4074374.9624273432);
+    viewer.camera.direction = new Cesium.Cartesian3(0.7315845671327136, -0.19328618276938822, -0.6537770817975181);
+    viewer.camera.up = new Cesium.Cartesian3(0.29485441975275306, -0.7749338536087541, 0.559051333674604);
+    viewer.camera.right = new Cesium.Cartesian3(-0.6146908916565361, -0.6017623900523568, -0.5099383625821535);
+}
+
 Sandcastle.addToolbarButton('Go to museum', goToMuseum);
+Sandcastle.addToolbarButton('Go to street', goToStreet);
+
 
 // Styling ////////////////////////////////////////////////////////////////////
 
