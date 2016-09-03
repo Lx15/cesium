@@ -996,24 +996,34 @@ define([
                     // tile (and can't make child requests because no slots are available)
                     // then the children do not need to be sorted.
 
-                    var allChildrenLoaded = t.numberOfChildrenWithoutContent === 0;
-                    if (allChildrenLoaded || t.canRequestContent()) {
-                        // Distance is used for sorting now and for computing SSE when the tile comes off the stack.
-                        computeDistanceToCamera(children, frameState);
+                    // TODO : don't always sort, only sort when requesting / refining to children
+                    // Distance is used for sorting now and for computing SSE when the tile comes off the stack.
+                    computeDistanceToCamera(children, frameState);
 
-                        // Sort children by distance for (1) request ordering, and (2) early-z
-                        children.sort(sortChildrenByDistanceToCamera);
-// TODO: same TODO as above.
+                    // Sort children by distance for (1) request ordering, and (2) early-z
+                    children.sort(sortChildrenByDistanceToCamera);
+
+                    var allVisibleChildrenLoaded = true;
+
+                    for (k = 0; k < childrenLength; ++k) {
+                        child = children[k];
+                        // Store the plane mask so that the child can optimize based on its parent's returned mask
+                        child.parentPlaneMask = planeMask;
+                        //var visible = (child.visibility(frameState.cullingVolume) !== CullingVolume.MASK_OUTSIDE);
+                        var visible = (child.contentsVisibility(frameState.cullingVolume) !== Intersect.OUTSIDE);
+                        child.visible = visible;
+                        if (visible && !child.contentReady) {
+                            allVisibleChildrenLoaded = false;
+                        }
                     }
 
-                    if (!allChildrenLoaded) {
+                    if (!allVisibleChildrenLoaded) {
                         // Tile does not meet SSE.  Add its commands since it is the best we have and request its children.
                         selectTile(tileset, t, fullyVisible, frameState);
 
-                        if (outOfCore) {
-                            for (k = 0; (k < childrenLength) && t.canRequestContent(); ++k) {
-                                child = children[k];
-                                // PERFORMANCE_IDEA: we could spin a bit less CPU here by keeping separate lists for unloaded/ready children.
+                        for (k = 0; k < childrenLength; ++k) {
+                            child = children[k];
+                            if (child.visible) {
                                 if (child.contentUnloaded) {
                                     requestContent(tileset, child, outOfCore);
                                 } else {
@@ -1025,20 +1035,16 @@ define([
                             }
                         }
                     } else {
-                        // Tile does not meet SSE and its children are loaded.  Refine to them in front-to-back order.
                         for (k = 0; k < childrenLength; ++k) {
                             child = children[k];
-                            // Store the plane mask so that the child can optimize based on its parent's returned mask
-                            child.parentPlaneMask = planeMask;
-                            stack.push(child);
-
-                            // Touch the child tile now even if it turns out not to be visible when
-                            // it comes off the stack.  Since replacement refinement requires all child
-                            // tiles to be loaded to refine to them, we want to keep it in the cache.
-                            touch(tileset, child, outOfCore);
+                            if (child.visible) {
+                                stack.push(child);
+                                // TODO : don't need to check visibility in top of selectTiles anymore
+                            }
                         }
 
                         t.replaced = true;
+                        // TODO : don't need to check visibility in checkRefiningTiles anymore
                         if (defined(t.descendantsWithContent)) {
                             scratchRefiningTiles.push(t);
                         }
@@ -1066,7 +1072,7 @@ define([
             for (j = 0; j < descendantsLength; ++j) {
                 descendant = refiningTile.descendantsWithContent[j];
                 if (!descendant.selected && !descendant.replaced &&
-                    frameState.cullingVolume.computeVisibility(descendant.contentBoundingVolume) !== Intersect.OUTSIDE) {
+                    (descendant.contentsVisibility(frameState.cullingVolume) !== Intersect.OUTSIDE)) {
                         refinable = false;
                         break;
                 }

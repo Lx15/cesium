@@ -294,6 +294,13 @@ define([
         this.replaced = false;
 
         /**
+         * Marks if the tile is visible this frame.
+         *
+         * @type {Boolean}
+         */
+        this.visible = false;
+
+        /**
          * The last frame number the tile was selected in.
          *
          * @type {Number}
